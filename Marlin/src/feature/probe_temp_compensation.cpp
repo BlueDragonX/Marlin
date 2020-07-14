@@ -29,6 +29,15 @@
 
 ProbeTempComp temp_comp;
 
+void serial_print_tsi(const uint8_t tsi) {
+  serialprintPGM(tsi == TSI_BED ? PSTR("Bed") :
+    #if ENABLED(USE_TEMP_EXT_COMPENSATION)
+      tsi == TSI_EXT ? PSTR("Extruder") :
+    #endif
+    PSTR("Probe")
+  );
+}
+
 int16_t ProbeTempComp::z_offsets_probe[ProbeTempComp::cali_info_init[TSI_PROBE].measurements],  // = {0}
         ProbeTempComp::z_offsets_bed[ProbeTempComp::cali_info_init[TSI_BED].measurements];      // = {0}
 
@@ -69,12 +78,7 @@ void ProbeTempComp::print_offsets() {
   for (uint8_t s = 0; s < TSI_COUNT; s++) {
     float temp = cali_info[s].start_temp;
     for (int16_t i = -1; i < cali_info[s].measurements; ++i) {
-      serialprintPGM(s == TSI_BED ? PSTR("Bed") :
-        #if ENABLED(USE_TEMP_EXT_COMPENSATION)
-          s == TSI_EXT ? PSTR("Extruder") :
-        #endif
-        PSTR("Probe")
-      );
+      serial_print_tsi(s);
       SERIAL_ECHOLNPAIR(
         " temp: ", temp,
         "C; Offset: ", i < 0 ? 0.0f : sensor_z_offsets[s][i], " um"
@@ -155,9 +159,19 @@ bool ProbeTempComp::finish_calibration(const TempSensorID tsi) {
   return true;
 }
 
-void ProbeTempComp::compensate_measurement(const TempSensorID tsi, const float &temp, float &meas_z) {
-  if (WITHIN(temp, cali_info[tsi].start_temp, cali_info[tsi].end_temp))
-    meas_z -= get_offset_for_temperature(tsi, temp);
+void ProbeTempComp::compensate_measurement(const TempSensorID tsi, const float &temp, float &meas_z, const uint8_t verbose_level/*=0*/) {
+  if (WITHIN(temp, cali_info[tsi].start_temp, cali_info[tsi].end_temp)) {
+    float offset_z = get_offset_for_temperature(tsi, temp);
+    meas_z -= offset_z;
+    if (verbose_level) {
+      serial_print_tsi(tsi);
+      SERIAL_ECHOLNPAIR(" temp comp Z:", offset_z, " T:", temp, ".");
+    }
+  }
+  else if (verbose_level) {
+    serial_print_tsi(tsi);
+    SERIAL_ECHOLNPAIR(" temp T:", temp, " outside of compensation range [", cali_info[tsi].start_temp, "..", cali_info[tsi].end_temp, "].");
+  }
 }
 
 float ProbeTempComp::get_offset_for_temperature(const TempSensorID tsi, const float &temp) {

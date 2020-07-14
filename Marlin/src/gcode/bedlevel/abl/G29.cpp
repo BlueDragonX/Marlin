@@ -745,10 +745,10 @@ G29_TYPE GcodeSuite::G29() {
           }
 
           #if ENABLED(PROBE_TEMP_COMPENSATION)
-            temp_comp.compensate_measurement(TSI_BED, thermalManager.degBed(), measured_z);
-            temp_comp.compensate_measurement(TSI_PROBE, thermalManager.degProbe(), measured_z);
+            temp_comp.compensate_measurement(TSI_BED, thermalManager.degBed(), measured_z, verbose_level);
+            temp_comp.compensate_measurement(TSI_PROBE, thermalManager.degProbe(), measured_z, verbose_level);
             #if ENABLED(USE_TEMP_EXT_COMPENSATION)
-              temp_comp.compensate_measurement(TSI_EXT, thermalManager.degHotend(), measured_z);
+              temp_comp.compensate_measurement(TSI_EXT, thermalManager.degHotend(), measured_z, verbose_level);
             #endif
           #endif
 
