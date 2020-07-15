@@ -3526,10 +3526,10 @@ void Temperature::isr() {
   #if HAS_TEMP_PROBE
 
     #ifndef MIN_DELTA_SLOPE_DEG_PROBE
-      #define MIN_DELTA_SLOPE_DEG_PROBE 1.50
+      #define MIN_DELTA_SLOPE_DEG_PROBE 1.0
     #endif
     #ifndef MIN_DELTA_SLOPE_TIME_PROBE
-      #define MIN_DELTA_SLOPE_TIME_PROBE 300
+      #define MIN_DELTA_SLOPE_TIME_PROBE 600
     #endif
 
     bool Temperature::wait_for_probe(const float target_temp, bool no_wait_for_cooling/*=true*/) {
