@@ -635,6 +635,10 @@ private:
     static void M191();
   #endif
 
+  #if HAS_TEMP_PROBE
+    static void M192();
+  #endif
+
   #if HOTENDS && HAS_LCD_MENU
     static void M145();
   #endif
